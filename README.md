@@ -29,42 +29,39 @@
 | `clara-muz-team` | "둘이 같이 해줘", "다른 AI한테도 검토시켜줘", "구현은 GPT가, 검토는 Claude가" |
 | `ai-memory` | "메모해줘", "공유 메모 보여줘", "인수인계 문서 만들어줘" |
 
-## 설치하기
-
-### 0. 앱 준비 (이미 있으면 건너뛰세요)
+## 설치하기 (클릭만 하면 돼요)
 
 ![앱 준비](docs/img/step1.svg)
 
-Claude 데스크톱 앱과 ChatGPT 데스크톱 앱(Codex 포함) 중 **쓰는 쪽을 설치하고 로그인**해요. 둘 다 있으면 서로 일을 나눌 수 있어요.
+먼저 **Claude 데스크톱 앱**이나 **ChatGPT 데스크톱 앱** 중 쓰는 쪽을 설치하고 로그인해요. 둘 다 있으면 서로 일을 나눌 수 있어요.
 
-### 길 A. Claude 앱에 설치 (Code 탭)
+### 길 A. Claude 앱
 
 ![Claude 설치](docs/img/install-claude.svg)
 
-Claude 앱의 **Code 탭** 입력창에 한 줄씩 붙여넣고 Enter:
+1. 앱에서 **Customize → Plugins** 를 열어요.
+2. **Add → Add marketplace** 를 눌러요.
+3. 입력칸에 `Jay-Hyun/ClaraMuz` 를 붙여넣고 추가해요.
+4. 목록에서 **clara-muz** 를 골라 **Add** 를 눌러요.
 
-```
-/plugin marketplace add Jay-Hyun/ClaraMuz
-/plugin install clara-muz@clara-muz
-```
+한 번 설치하면 같은 계정의 채팅, Cowork, Claude Code에서 다시 설치하지 않고 쓸 수 있어요. (Code 탭에서는 프롬프트 옆 **＋ → Add plugins** 로도 설치해요.)
 
-### 길 B. ChatGPT 앱에 설치 (Codex 모드)
+### 길 B. ChatGPT 앱
 
 ![ChatGPT 설치](docs/img/install-chatgpt.svg)
 
-1. 터미널(Mac은 "터미널", Windows는 "PowerShell")에 한 줄 붙여넣기:
-   ```
-   codex plugin marketplace add Jay-Hyun/ClaraMuz
-   ```
-2. ChatGPT 앱을 **다시 시작**해요.
-3. **Plugins 탭**에서 출처 `ClaraMuz`를 고르고 `clara-muz`의 **＋** 를 눌러 설치해요.
-4. **새 채팅**을 열어서 쓰세요.
+회사(워크스페이스) 계정이라면 **관리자가 한 번만** 등록하면 직원은 클릭 한 번이에요.
 
-> **회사 관리자라면:** ChatGPT 워크스페이스의 **Admin → Plugins**에서 이 GitHub 저장소(`Jay-Hyun/ClaraMuz`)를 가져오면, 직원들은 1번을 건너뛰고 Plugins 탭에서 설치만 하면 돼요. (OpenAI 공식 문서 기준이에요.)
+- **관리자:** **Admin → Plugins → Add → Import marketplace** 를 열고 Source에 `https://github.com/Jay-Hyun/ClaraMuz` 를 넣어 가져와요. 그다음 `clara-muz`의 설치 정책을 직원에게 **Available**(또는 Installed)로 열어줘요.
+- **직원:** **Plugins 탭 → 회사 이름 탭**에서 `clara-muz`의 **＋** 를 누르고, **새 채팅**에서 써요.
+
+> 위 방법은 OpenAI·Anthropic 공식 문서에 나온 화면 기준이에요. 메뉴 이름이 앱 버전에 따라 다를 수 있어요.
+
+**관리자가 없다면 (개인 ChatGPT 계정):** 앱 안에서 GitHub 주소로 추가하는 화면은 공식 문서에서 찾지 못했어요. 개발자 도움으로 터미널에서 `codex plugin marketplace add Jay-Hyun/ClaraMuz` 를 한 번 실행하고 앱을 재시작하면 Plugins 탭에 나타나요. (비개발자는 관리자 등록 방식을 권해요.)
 
 ### 한쪽만 설치해도 되나요?
 
-ChatGPT 앱에 설치하면 **Chat·Work·Codex**에서 같은 플러그인이 보이고, Claude 앱에 설치하면 **Code 모드**에서 쓸 수 있어요. 단, 두 AI가 **같이 일하려면 명령을 실행할 수 있는 모드**(Claude의 Code 탭, ChatGPT의 Codex)에서 써야 해요. 일반 채팅 화면에서는 "인수인계 글 만들기"만 돼요.
+네. 다만 두 AI가 **같이 일하려면 상대 AI의 명령을 실행할 수 있는 모드**(Claude의 Code, ChatGPT의 Codex)에서 써야 해요. 일반 채팅 화면은 파일 저장과 명령 실행이 안 될 수 있어서 "인수인계 글 만들기"가 가장 확실해요.
 
 ## 써보기
 
@@ -107,7 +104,8 @@ Claude 앱에서는 `/clara-muz:clara-muz-team`, `/clara-muz:ai-memory`처럼 �
 | 명령어가 안 먹어요 | 앱을 완전히 종료했다가 다시 켜세요 |
 | `codex`/`claude`를 찾을 수 없대요 | AI가 설치해준다고 하면 "응"이라고 하거나, 해당 앱의 공식 설치 안내를 따라 설치하세요 |
 | "로그인이 필요하다"고 해요 | 해당 앱(Claude 또는 ChatGPT)에 로그인한 뒤 다시 시도하세요 |
-| ChatGPT Plugins 탭에 안 보여요 | `codex plugin marketplace list`로 등록됐는지 확인하고 앱을 재시작하세요 |
+| ChatGPT Plugins 탭에 안 보여요 | 관리자가 가져오기를 끝냈는지, 내 역할에 설치 정책이 열려 있는지 확인하고 앱을 재시작하세요 |
+| Claude에서 marketplace 추가가 안 돼요 | 회사 관리자가 외부 마켓 추가를 막았을 수 있어요. 관리자에게 문의하세요 |
 
 ## 현재 상태 (솔직하게)
 
@@ -120,7 +118,7 @@ v0.6.0. **사내 검증 전 단계**예요.
 | Claude용 플러그인 구조 검사 (`claude plugin validate`) | ✅ 통과 |
 | 진짜 Codex 실행, ChatGPT/Codex 앱에서 설치·동작 | ⏳ **미검증** (문서 기준으로 구성) |
 | Codex가 리더일 때 Claude 호출 | ⏳ **미검증** |
-| Claude 데스크톱 앱 Code 탭에서의 설치 화면 | ⏳ **미검증** |
+| Claude 앱 Customize → Plugins 에서 마켓 추가 · ChatGPT 관리자 가져오기 | ⏳ **미검증** (공식 문서 기준으로 안내) |
 | Windows | ⏳ **미검증** |
 
 예전 Node 서버(작업 취소, 폴더 강제 제한, MCP 모드)는 고급 사용자용으로 `extras/node-server/`에 남겨뒀어요. 기본 설치에는 들어가지 않아요.
@@ -135,12 +133,12 @@ v0.6.0. **사내 검증 전 단계**예요.
 - `ai-memory`: shared plain-markdown notes and one-time handoffs in `~/.clara-muz/memory/`, inspired by [ai-memory](https://github.com/akitaonrails/ai-memory).
 - If the other AI's command is missing, the lead offers to install it after your confirmation.
 
-Install in **Claude** (Code tab): `/plugin marketplace add Jay-Hyun/ClaraMuz`, then `/plugin install clara-muz@clara-muz`.
-Install in **ChatGPT/Codex**: `codex plugin marketplace add Jay-Hyun/ClaraMuz`, restart the app, open the Plugins tab and install. Workspace admins can import the repo under Admin > Plugins.
+Install in **Claude** (no terminal): Customize > Plugins > Add > Add marketplace, enter `Jay-Hyun/ClaraMuz`, then add `clara-muz`. Plugins are saved to your account, so they also appear in Cowork and Claude Code.
+Install in **ChatGPT/Codex**: a workspace admin imports the repo once (Admin > Plugins > Add > Import marketplace, Source `https://github.com/Jay-Hyun/ClaraMuz`); members then click + on the Plugins tab. Developers can instead run `codex plugin marketplace add Jay-Hyun/ClaraMuz`.
 
 Layout: `plugins/clara-muz/` holds both manifests (`.claude-plugin/plugin.json`, `plugin.json`) and `skills/`; `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json` point to it.
 
-Untested: real Codex runs, the ChatGPT/Codex install flow, Codex-as-lead, desktop app install UIs, Windows.
+Untested: real Codex runs, the ChatGPT/Codex install flow, Codex-as-lead, the install UIs in both apps (written from official docs), Windows.
 
 ## License
 
