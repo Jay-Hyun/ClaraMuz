@@ -31,6 +31,41 @@
 | `clara-muz-team` | "Do this together", "have the other AI review it too", "GPT builds, Claude reviews" |
 | `ai-memory` | "Take a note", "show the shared notes", "write a handoff document" |
 
+## Use cases
+
+![Ways to use it](docs/img/en/usecases.svg)
+
+The app you type in is the **main** (lead). The other AI is the **sub**.
+
+### 1. GPT plans, Claude builds
+
+*You want ChatGPT as the main for planning and Claude as the sub for building.*
+
+- **Start in:** the ChatGPT app, Codex mode.
+- **Say:** `Use clara-muz-team: you write the plan for a signup page, then have Claude build it`
+- **What happens:** GPT writes a plan with goals, steps and acceptance criteria, hands it to Claude to build (edits only the files it owns), then reviews the result against the plan.
+
+### 2. Claude builds, GPT makes the images
+
+*Claude is the main for building, but it cannot generate images, so GPT does that part.*
+
+- **Start in:** the Claude app, Code tab.
+- **Say:** `Use clara-muz-team: build the landing page, and have GPT make the hero image (16:9, flat illustration) and save it in assets/`
+- **What happens:** Claude builds the page and sends GPT a precise brief (subject, style, size, file name). GPT saves the image; Claude checks the file exists and uses it.
+- **Note:** this needs image generation to be available to the GPT side in your setup. If it is not, the AI tells you plainly instead of faking an image.
+
+### 3. Cross-check a document with both AIs
+
+*You want a claim, a contract summary or a report checked by two different AIs.*
+
+- **Start in:** either app.
+- **Say:** `Use clara-muz-team to cross-check this report with both AIs and show where they disagree`
+- **What happens:** both AIs get the same prompt and answer independently. The lead then lists what they agree on, where they differ and what neither supports, checks the disputed points against sources, and reports in a short table. Answers are never merged by averaging.
+
+### 4. Hit your usage limit? Hand it over
+
+- **Say:** `Use ai-memory to write a handoff document`, then open the other app and say `Use ai-memory and continue from the handoff`.
+
 ## Install
 
 ![Prepare the apps](docs/img/en/step1.svg)
