@@ -39,6 +39,14 @@ Split the task into independent pieces with non-overlapping files. For each piec
 
 Use edit mode only when edits are intended. Never let two workers own the same file. Stay inside the folder the user is working in; ask before touching anything else.
 
+## 2b. Common patterns
+
+The app the user is typing in is the **main** (lead). If they want the other app to lead, tell them to open that app instead. Match the pattern the user describes:
+
+- **Main plans, other builds** (for example GPT plans, Claude builds): first write the plan as a short document with goal, steps and acceptance criteria, and save it as a note. Give the other AI the plan and let it build (edit mode, owned files only). Afterwards review the result against the plan yourself.
+- **Main builds, the other AI makes what main cannot** (for example images): build your part. Send the other AI a precise brief (subject, style, size, file name, save folder inside the working folder) and ask it to save the file and reply with the path. Check the file exists, then use it. If the other AI cannot do it in this environment (for example no image generation), say so plainly and stop; never fake the result.
+- **Cross-check**: send the same question or material to both AIs with the same prompt and do not show one answer to the other at first. Then compare: points both agree on, points where they differ, and claims neither supports. Check disputed facts yourself against sources. Report in a short table and state your confidence. Do not merge answers by averaging.
+
 ## 3. Check, don't trust
 
 Compare each report with its acceptance criteria. Open the files it names and run the checks yourself. If a result falls short, send a correction with the specifics (a new run whose prompt includes the previous report).
