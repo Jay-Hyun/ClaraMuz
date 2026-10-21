@@ -1,7 +1,7 @@
 {
   "name": "clara-muz",
-  "version": "0.1.0",
-  "description": "Backchat between Claude and ChatGPT: delegate planning, implementation, research and review to Claude Code CLI or Codex CLI through a durable job relay.",
+  "version": "0.2.0",
+  "description": "Backchat between Claude and ChatGPT: delegate planning, implementation, research and review to Claude Code CLI or Codex CLI.",
   "author": { "name": "Jay-Hyun", "url": "https://github.com/Jay-Hyun" },
   "homepage": "https://github.com/Jay-Hyun/ClaraMuz",
   "repository": "https://github.com/Jay-Hyun/ClaraMuz",

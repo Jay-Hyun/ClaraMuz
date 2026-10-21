@@ -9,7 +9,7 @@ Task: $ARGUMENTS
 
 Steps:
 
-1. Call `team_health`. Stop and tell the user if the relay agent is offline or a provider is not logged in.
+1. Call `team_health`. Stop and tell the user if a CLI version is `null` (not installed) or `cwd` would fall outside `allowed_roots` (set `CLARAMUZ_ALLOWED_ROOTS`).
 2. Split the task into independent pieces. For each piece choose a provider:
    - `delegate_to_claude` (default `read_only`): planning, research, review.
    - `delegate_to_gpt` (default `workspace_write`): implementation.

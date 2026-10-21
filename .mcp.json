@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "ClaraMuz": {
-      "type": "http",
-      "url": "https://amuze.kr/mcp/clara_muz"
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/index.mjs"]
     }
   }
 }
