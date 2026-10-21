@@ -1,23 +1,23 @@
 ---
-description: Delegate a task to Claude or GPT through the ClaraMuz relay, then collect and verify the result
+description: Delegate a task to Claude or GPT (Codex) as background jobs, then collect and verify the results. No MCP needed.
 argument-hint: <task description>
+allowed-tools: Bash
 ---
 
-Run the task below as a two-model team using the ClaraMuz MCP tools.
+Run the task below as a two-model team using the ClaraMuz CLI.
 
 Task: $ARGUMENTS
 
-Steps:
+The CLI is `node "${CLAUDE_PLUGIN_ROOT}/server/index.mjs" <command> --json '<JSON>'` (run `... help` to list commands). Each command prints JSON. If `${CLAUDE_PLUGIN_ROOT}` is empty, find `server/index.mjs` inside the installed clara-muz plugin directory.
 
-1. Call `team_health`. Stop and tell the user if a CLI version is `null` (not installed) or `cwd` would fall outside `allowed_roots` (set `CLARAMUZ_ALLOWED_ROOTS`).
-2. Split the task into independent pieces. For each piece choose a provider:
-   - `delegate_to_claude` (default `read_only`): planning, research, review.
-   - `delegate_to_gpt` (default `workspace_write`): implementation.
-   Give every job a `title`, `goal`, `cwd` (inside an allowed root from `team_health`), non-overlapping `owned_paths`, and concrete `acceptance_criteria`. Put prior decisions in `context`; the worker sees nothing else.
-3. Use `workspace_write` only when edits are intended, and never give two jobs the same owned path.
-4. Poll with `team_wait` (max 30s per call). Do not busy-loop `team_status`.
-5. Read each finished job with `team_result` and check it against its acceptance criteria. Do not accept a report at face value; inspect the files it names.
-6. If a result falls short, send a correction with `team_continue`. Use `team_cancel` for jobs that are off track.
-7. Record decisions the next job or the other model needs with `memory_add`. Jobs get the shared memory automatically and can reply through `<memory>` blocks, which `team_result` saves.
-8. If a Claude job fails on quota, the server hands it to GPT automatically (`state: handed_off`); `team_wait`/`team_result` follow the handoff. Tell the user when that happened.
-9. Summarize for the user: what each provider did, what was verified, what remains.
+1. `health`: stop and tell the user if a CLI version is `null` (not installed) or the working directory is outside `allowed_roots` (set `CLARAMUZ_ALLOWED_ROOTS`).
+2. Split the task into independent pieces and choose a provider for each:
+   - `delegate-claude` (default `read_only`): planning, research, review.
+   - `delegate-gpt` (default `workspace_write`): implementation.
+   Required fields: `title`, `goal`, `cwd` (absolute, inside an allowed root), `owned_paths` (never shared between two jobs), `acceptance_criteria`. Put prior decisions in `context`; the worker sees nothing else. Use `workspace_write` only when edits are intended.
+3. Wait with `wait --json '{"job_id":"...","seconds":30}'`. Repeat while `state` is `running`. Do not poll `status` in a tight loop.
+4. Read each finished job with `result` and check it against its acceptance criteria. Inspect the files it names; do not trust the report alone.
+5. If a result falls short, send a correction with `continue`. Use `cancel` for jobs that are off track.
+6. Save decisions the next job needs with `mem-add`. Jobs receive shared memory automatically and answer with `<memory>` / `<handoff>` blocks, which `result` saves.
+7. A Claude job that fails on quota is handed to GPT automatically (`state: handed_off`). `wait`, `result` and `continue` follow the handoff. Tell the user when this happened.
+8. Summarize: what each provider did, what was verified, what remains.
