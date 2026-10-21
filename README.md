@@ -1,142 +1,106 @@
-<p align="center"><img src="plugins/clara-muz/assets/logo.png" alt="ClaraMuz 로고" width="120"></p>
+<p align="center"><a href="README.ko.md">한국어</a> · <b>English</b> · <a href="README.ja.md">日本語</a></p>
+
+<p align="center"><img src="plugins/clara-muz/assets/logo.png" alt="ClaraMuz logo" width="120"></p>
 
 # ClaraMuz
 
-### Claude와 ChatGPT가 한 팀처럼 일하게 해주는 플러그인
+### A plugin that lets Claude and ChatGPT work as one team
 
-![ClaraMuz 한눈에 보기](docs/img/hero.svg)
+![ClaraMuz at a glance](docs/img/en/hero.svg)
 
-> English summary is at the bottom. ⬇️
+## In one line
 
-## 한 줄 요약
+**Split the work between two AIs, and hand unfinished work over through notes.** Install it once in the Claude app or the ChatGPT app.
 
-**일을 둘이 나눠 하고, 하던 일은 메모로 넘겨요.** Claude 앱이든 ChatGPT 앱이든 한 번 설치하면 됩니다.
+## When to use it
 
-## 이럴 때 써요
-
-| 상황 | ClaraMuz가 해주는 일 |
+| Situation | What ClaraMuz does |
 |---|---|
-| "만드는 건 ChatGPT, 검토는 Claude가 했으면…" | 일을 쪼개서 두 AI에게 나눠 맡기고, 결과를 **직접 열어보며 확인**해서 알려줘요 |
-| "Claude 사용량이 다 떨어졌어요!" | 지금까지 한 일을 **인수인계 메모**로 정리해줘요. ChatGPT에서 이어서 하면 돼요 ![이어받기](docs/img/handoff.svg) |
-| "아까 정한 규칙을 또 설명하기 싫어요" | 두 AI가 같이 보는 **공유 메모장**에 적어두면 둘 다 읽어요 |
+| "ChatGPT should build it and Claude should review it…" | Splits the task, hands the pieces to both AIs, and **opens the files to check the results itself** before reporting back |
+| "I ran out of Claude usage!" | Writes a **handoff note** of what is done and what is left, so you can continue in ChatGPT ![handoff](docs/img/en/handoff.svg) |
+| "I don't want to explain the same rules again" | Put them in the **shared notes** that both AIs read |
 
-## 어떻게 동작해요?
+## How it works
 
-- 설치하는 건 **설명서(스킬) 두 개**예요. 프로그램이 아니라서 가볍고, 따로 깔 도구(Node.js 등)가 없어요.
-- 공유 메모장은 내 컴퓨터의 평범한 문서 파일이에요 (`~/.clara-muz/memory/`). 메모장으로 열어 고칠 수 있어요.
-- 일을 나눌 때는 상대 AI의 명령 도구(`codex` 또는 `claude`)를 불러 써요. 없으면 **AI가 "설치해도 될까요?"라고 먼저 물어봐요.**
+- You install **two skills** (plain written instructions). It is not a program, so it is light and needs no extra tools such as Node.js.
+- Shared notes are ordinary files on your computer (`~/.clara-muz/memory/`). You can open and edit them in any text editor.
+- To split work, the lead AI calls the other AI's command tool (`codex` or `claude`). If it is missing, **the AI asks "may I install it?" first.**
 
-| 스킬 | 이럴 때 말하세요 |
+| Skill | Say something like |
 |---|---|
-| `clara-muz-team` | "둘이 같이 해줘", "다른 AI한테도 검토시켜줘", "구현은 GPT가, 검토는 Claude가" |
-| `ai-memory` | "메모해줘", "공유 메모 보여줘", "인수인계 문서 만들어줘" |
+| `clara-muz-team` | "Do this together", "have the other AI review it too", "GPT builds, Claude reviews" |
+| `ai-memory` | "Take a note", "show the shared notes", "write a handoff document" |
 
-## 설치하기
+## Install
 
-![앱 준비](docs/img/step1.svg)
+![Prepare the apps](docs/img/en/step1.svg)
 
-먼저 **Claude 데스크톱 앱**이나 **ChatGPT 데스크톱 앱** 중 쓰는 쪽을 설치하고 로그인해요. 둘 다 있으면 서로 일을 나눌 수 있어요.
+First install and sign in to the **Claude desktop app** or the **ChatGPT desktop app** (whichever you use). With both, the two AIs can share work.
 
-| 가이드 | 누구를 위한 건가요? |
+| Guide | Who is it for? |
 |---|---|
-| **[GUI 설치 가이드](docs/INSTALL-GUI.md)** | 터미널 없이 앱에서 클릭으로 설치하고 싶은 모든 분 (**권장**) |
-| [CLI 설치 가이드](docs/INSTALL-CLI.md) | 터미널을 쓰는 개발자 |
+| **[GUI install guide](docs/INSTALL-GUI.md)** | Anyone who wants to install by clicking in the app, no terminal (**recommended**) |
+| [CLI install guide](docs/INSTALL-CLI.md) | Developers who use the terminal |
 
-### 한눈에 보기: 앱에서 설치
+### At a glance: install in the app
 
-**Claude 앱:** **Customize → Plugins → Add → Add marketplace** 에 `Jay-Hyun/ClaraMuz` 를 넣고 `clara-muz` 를 추가해요.
+**Claude app:** open **Customize → Plugins → Add → Add marketplace**, enter `Jay-Hyun/ClaraMuz`, then add `clara-muz`.
 
-![Claude 설치](docs/img/install-claude.svg)
+![Install in Claude](docs/img/en/install-claude.svg)
 
-**ChatGPT 앱:** **Plugins → 플러그인 마켓플레이스 추가** 의 **출처** 칸에 `Jay-Hyun/ClaraMuz` 를 넣고(나머지 칸은 비워두기) 추가한 뒤, `clara-muz` 를 설치해요. 회사 관리자는 **Admin → Plugins → Import marketplace** 로 직원 전체에 배포할 수 있어요.
+**ChatGPT app:** open **Plugins → Add plugin marketplace**, enter `Jay-Hyun/ClaraMuz` as the **Source** (leave the other fields empty), add it, then install `clara-muz`. A company admin can roll it out to everyone with **Admin → Plugins → Import marketplace**.
 
-![ChatGPT 설치](docs/img/install-chatgpt.svg)
+![Install in ChatGPT](docs/img/en/install-chatgpt.svg)
 
-> 위 화면은 공식 문서와 실제 앱 화면을 참고한 **예시 그림**이에요. 메뉴 이름이 앱 버전에 따라 다를 수 있어요. 자세한 내용과 문제 해결은 [GUI 설치 가이드](docs/INSTALL-GUI.md)에 있어요.
+> The pictures are **illustrations** based on the official docs and the real app. Menu names may differ by app version. Details and troubleshooting are in the [GUI install guide](docs/INSTALL-GUI.md).
 
-### 한쪽만 설치해도 되나요?
+### Is one app enough?
 
-네. 다만 두 AI가 **같이 일하려면 상대 AI의 명령을 실행할 수 있는 모드**(Claude의 Code, ChatGPT의 Codex)에서 써야 해요. 일반 채팅 화면은 파일 저장과 명령 실행이 안 될 수 있어서 "인수인계 글 만들기"가 가장 확실해요.
+Yes. But for the two AIs to **work together, you need to use a mode that can run the other AI's command** (Code in Claude, Codex in ChatGPT). In a plain chat window, files may not be saved and commands may not run, so "write a handoff note" is the most reliable feature there.
 
-## 써보기
+## Try it
 
-![써보기](docs/img/step4.svg)
+![Try it](docs/img/en/step4.svg)
 
-그냥 말로 부탁하면 돼요.
+Just ask in plain words.
 
 ```
-clara-muz-team 으로 README를 읽고 오타를 찾아줘
-ai-memory 에 "버튼 색은 파란색" 메모해줘
-ai-memory 로 인수인계 문서 만들어줘
+Use clara-muz-team to read the README and find typos
+Use ai-memory to note "buttons are blue"
+Use ai-memory to write a handoff document
 ```
 
-Claude 앱에서는 `/clara-muz:clara-muz-team`, `/clara-muz:ai-memory`처럼 슬래시로도 부를 수 있어요.
+In the Claude app you can also use the slash forms `/clara-muz:clara-muz-team` and `/clara-muz:ai-memory`.
 
-- 처음에 AI가 "파일을 읽어도 될까요?", "명령을 실행해도 될까요?"라고 물을 수 있어요. 내용을 보고 허락하면 돼요.
-- 상대 AI의 명령 도구가 없으면 "설치해도 될까요?"라고 물어봐요. **"응"** 하면 공식 설치 방법으로 설치해줘요. 그 뒤 해당 앱에 로그인되어 있는지만 확인해주세요.
+- At first the AI may ask "may I read files?" or "may I run a command?". Check what it wants and allow it.
+- If the other AI's command tool is missing, it asks "may I install it?". Say **yes** and it installs it with the official method. Then just make sure you are signed in to that app.
 
-> 그림 속 화면은 이해를 돕기 위한 **예시 그림**이에요. 실제 화면과 글자가 조금 다를 수 있어요.
+> The pictures are **illustrations**. The real screens may look slightly different.
 
-## 안전하게 쓰기
+## Stay safe
 
-- 상대 AI에게 일을 맡길 때 **읽기 전용이 기본**이고, 파일을 고쳐야 할 때만 쓰기 모드를 써요.
-- 지금 작업 중인 폴더 밖은 건드리지 않도록 지시해요. (지시일 뿐 강제 차단은 아니에요.)
-- 공유 메모장에는 **비밀번호, 키, 개인정보를 적지 마세요.** 평문 파일이에요.
-- 메모장 위치: Mac/Linux `~/.clara-muz/memory/`, Windows `C:\Users\내이름\.clara-muz\memory\`
+- Work handed to the other AI is **read-only by default**; write mode is used only when files must change.
+- The AI is told not to touch anything outside the folder you are working in. (This is an instruction, not a hard block.)
+- **Never put passwords, keys or personal data in the shared notes.** They are plain text files.
+- Notes location: Mac/Linux `~/.clara-muz/memory/`, Windows `C:\Users\<you>\.clara-muz\memory\`
 
-## 자주 묻는 질문
+## FAQ
 
-- **돈이 드나요?** ClaraMuz는 무료예요. Claude와 ChatGPT는 각자 쓰던 구독 그대로예요.
-- **Node.js나 서버가 필요한가요?** 아니요.
-- **한쪽 AI만 있어도 되나요?** 네. 메모장과 인수인계는 되고, 일 나누기는 그 AI의 하위 작업자로 처리해요. 상대 AI가 없었다면 AI가 그렇게 말해줘요.
-- **메모는 어떻게 넘어가나요?** 한쪽이 쓴 메모 파일을 다른 쪽이 읽어요. 인수인계 메모는 한 번 가져가면 `claimed`로 바뀌어 중복으로 가져가지 않아요. [ai-memory](https://github.com/akitaonrails/ai-memory)의 아이디어를 가볍게 빌려왔고, 둘은 서로 독립적이에요.
-- **메모를 항상 자동으로 읽게 하고 싶어요.** `ai-memory 로 init 해줘`라고 하면 앱의 전역 지침 파일에 한 줄 규칙을 추가해줘요(확인 후).
+- **Does it cost money?** ClaraMuz is free. Claude and ChatGPT use your existing subscriptions.
+- **Do I need Node.js or a server?** No.
+- **Can I use just one AI?** Yes. Notes and handoffs work, and the work is split among that AI's own sub-workers. If the other AI was not used, the AI tells you so.
+- **How do notes get passed along?** One side writes a note file, the other reads it. A handoff note changes to `claimed` once taken, so it is never taken twice. The idea is borrowed lightly from [ai-memory](https://github.com/akitaonrails/ai-memory); the two projects are independent.
+- **I want notes to be read automatically every time.** Ask "run init with ai-memory" and it adds a one-line rule to the app's global instructions file (after asking you).
 
-## 문제가 생기면
+## Troubleshooting
 
-| 증상 | 해보세요 |
+| Symptom | Try this |
 |---|---|
-| 명령어가 안 먹어요 | 앱을 완전히 종료했다가 다시 켜세요 |
-| `codex`/`claude`를 찾을 수 없대요 | AI가 설치해준다고 하면 "응"이라고 하거나, 해당 앱의 공식 설치 안내를 따라 설치하세요 |
-| "로그인이 필요하다"고 해요 | 해당 앱(Claude 또는 ChatGPT)에 로그인한 뒤 다시 시도하세요 |
-| ChatGPT Plugins 탭에 안 보여요 | 마켓플레이스 추가가 끝났는지(회사 계정은 관리자가 가져오기를 끝냈는지) 확인하고 앱을 재시작하세요 |
-| Claude에서 marketplace 추가가 안 돼요 | 회사 관리자가 외부 마켓 추가를 막았을 수 있어요. 관리자에게 문의하세요 |
-
-## 현재 상태 (솔직하게)
-
-v0.7.0. **사내 검증 전 단계**예요.
-
-| 항목 | 상태 |
-|---|---|
-| Claude가 리더로 `clara-muz-team` 실행 (가짜 Codex로) | ✅ 확인: 메모 읽기, 설치 확인, 읽기 전용 실행, 결과 직접 검증, 가짜임을 알아챔 |
-| `ai-memory` 메모 추가·조회 (진짜 Claude) | ✅ 확인 |
-| Claude용 플러그인 구조 검사 (`claude plugin validate`) | ✅ 통과 |
-| 진짜 Codex 실행, ChatGPT/Codex 앱에서 설치·동작 | ⏳ **미검증** (문서 기준으로 구성) |
-| Codex가 리더일 때 Claude 호출 | ⏳ **미검증** |
-| ChatGPT 앱의 "플러그인 마켓플레이스 추가" 화면에서 설치 (플러그인 상세 화면까지 확인) | ✅ 설치 화면에서 스킬 2개 표시 확인 |
-| Claude 앱 Customize → Plugins 에서 마켓 추가 · ChatGPT 관리자 가져오기 | ⏳ **미검증** (공식 문서 기준으로 안내) |
-| Windows | ⏳ **미검증** |
-
-예전 Node 서버(작업 취소, 폴더 강제 제한, MCP 모드)는 고급 사용자용으로 `extras/node-server/`에 남겨뒀어요. 기본 설치에는 들어가지 않아요.
-
----
-
-## English
-
-**ClaraMuz lets Claude and ChatGPT work as one team**: split a task, verify each other's results, and hand over unfinished work through shared notes. It is two skills (plain instructions), no Node.js, no server, no MCP.
-
-- `clara-muz-team`: lead AI splits the work, runs the other AI (`codex exec` / `claude -p`), and verifies results itself.
-- `ai-memory`: shared plain-markdown notes and one-time handoffs in `~/.clara-muz/memory/`, inspired by [ai-memory](https://github.com/akitaonrails/ai-memory).
-- If the other AI's command is missing, the lead offers to install it after your confirmation.
-
-Install in **Claude** (no terminal): Customize > Plugins > Add > Add marketplace, enter `Jay-Hyun/ClaraMuz`, then add `clara-muz`. Plugins are saved to your account, so they also appear in Cowork and Claude Code.
-Install in **ChatGPT/Codex**: Plugins > Add plugin marketplace, Source `Jay-Hyun/ClaraMuz` (leave Git ref and Sparse path empty), then install `clara-muz`. Workspace admins can import the repo once for everyone (Admin > Plugins > Import marketplace).
-
-Guides: [GUI install](docs/INSTALL-GUI.md) and [CLI install](docs/INSTALL-CLI.md) are separate.
-
-Layout: `plugins/clara-muz/` holds both manifests (`.claude-plugin/plugin.json`, `plugin.json`) and `skills/`; `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json` point to it.
-
-Untested: real Codex runs, the ChatGPT/Codex install flow, Codex-as-lead, the install UIs in both apps (written from official docs), Windows.
+| The command does nothing | Quit the app completely and start it again |
+| "`codex` / `claude` not found" | Say yes when the AI offers to install it, or follow the app's official install guide |
+| "Sign-in required" | Sign in to that app (Claude or ChatGPT) and try again |
+| Not visible on the ChatGPT Plugins tab | Check that adding the marketplace finished (on a company account, that the admin finished the import) and restart the app |
+| Claude will not add a marketplace | Your admin may block external marketplaces. Ask them |
 
 ## License
 
