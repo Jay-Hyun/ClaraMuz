@@ -1,6 +1,40 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "clara-muz",
-  "version": "0.6.0",
-  "description": "Claude와 ChatGPT(Codex)가 일을 나눠 하고, 하던 일을 메모로 이어받게 해주는 팀 플러그인. / Lets Claude and ChatGPT (Codex) split work and hand over unfinished work through shared notes."
+  "version": "0.7.0",
+  "description": "Claude와 ChatGPT(Codex)가 일을 나눠 하고, 하던 일을 메모로 이어받게 해주는 팀 플러그인. / Lets Claude and ChatGPT (Codex) split work and hand over unfinished work through shared notes.",
+  "author": {
+    "name": "Jay-Hyun",
+    "url": "https://github.com/Jay-Hyun"
+  },
+  "homepage": "https://github.com/Jay-Hyun/ClaraMuz",
+  "repository": "https://github.com/Jay-Hyun/ClaraMuz",
+  "license": "MIT",
+  "keywords": [
+    "claude",
+    "codex",
+    "chatgpt",
+    "handoff",
+    "memory",
+    "multi-agent"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "ClaraMuz",
+        "shortDescription": "Claude와 ChatGPT가 일을 나눠 하고 메모로 이어받아요",
+        "longDescription": "한 가지 일을 Claude와 ChatGPT(Codex)에게 나눠 맡기고 결과를 직접 확인해요. 하던 일은 공유 메모와 인수인계 문서로 다른 AI가 이어받아요.",
+        "developerName": "Jay-Hyun",
+        "category": "Productivity",
+        "websiteURL": "https://github.com/Jay-Hyun/ClaraMuz",
+        "defaultPrompt": [
+          "clara-muz-team 으로 이 일을 Claude와 ChatGPT에게 나눠서 해줘",
+          "ai-memory 로 인수인계 문서 만들어줘"
+        ],
+        "brandColor": "#10A37F",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
 }
