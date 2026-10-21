@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
 
 const HOME = process.env.CLARAMUZ_HOME || path.join(os.homedir(), '.clara-muz');
 const JOBS = path.join(HOME, 'jobs');
@@ -44,8 +45,39 @@ const TOOLS = [
   { name: 'team_wait', description: 'Wait up to 30 seconds for a job to finish, then return status. No new model call.', inputSchema: jobIdSchema({ seconds: { type: 'integer', minimum: 1, maximum: 30, default: 15 } }) },
   { name: 'team_result', description: "Read a finished job's final report. Check it against the acceptance criteria and inspect the files it names.", inputSchema: jobIdSchema() },
   { name: 'team_continue', description: 'Send a follow-up in the same provider session. Original job must have finished; returns a new job id.', inputSchema: jobIdSchema({ instruction: { type: 'string', minLength: 1, maxLength: 30000 }, acceptance_criteria: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 30 } }, ['instruction']) },
+  { name: 'memory_add', description: 'Append a note to the shared memory both Claude and GPT read. Use for decisions, findings, handoffs and questions for the other model.', inputSchema: { type: 'object', additionalProperties: false, required: ['text'], properties: { text: { type: 'string', minLength: 1, maxLength: 4000 }, author: { type: 'string', description: 'claude, gpt, or user (default user)' }, to: { type: 'string', description: 'Optional addressee: claude, gpt or all' }, tags: { type: 'array', items: { type: 'string' }, maxItems: 10 } } } },
+  { name: 'memory_read', description: 'Read shared memory notes, newest last. Optional substring query and tag filter.', inputSchema: { type: 'object', additionalProperties: false, properties: { query: { type: 'string' }, tag: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 200, default: 20 } } } },
+  { name: 'memory_forget', description: 'Delete a shared memory note by id.', inputSchema: { type: 'object', additionalProperties: false, required: ['id'], properties: { id: { type: 'string' } } } },
   { name: 'team_cancel', description: 'Request cancellation of a job. Existing files are preserved.', inputSchema: jobIdSchema() },
 ];
+
+const MEM = path.join(HOME, 'memory.jsonl');
+const MEM_INJECT_CHARS = Number(process.env.CLARAMUZ_MEMORY_CHARS || 6000);
+const readMem = () => slurp(MEM).split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+const writeMem = (notes) => fs.writeFileSync(MEM, notes.map((n) => JSON.stringify(n)).join('\n') + (notes.length ? '\n' : ''));
+function addMem({ text, author = 'user', to = 'all', tags = [] }) {
+  const note = { id: randomUUID().slice(0, 8), ts: new Date().toISOString(), author, to, tags, text: String(text).slice(0, 4000) };
+  fs.appendFileSync(MEM, JSON.stringify(note) + '\n');
+  return note;
+}
+function memoryDigest(forProvider) {
+  const notes = readMem().filter((n) => n.to === 'all' || n.to === forProvider || n.author === forProvider);
+  let out = ''; const picked = [];
+  for (let i = notes.length - 1; i >= 0; i--) {
+    const line = `- [${notes[i].id}] ${notes[i].ts.slice(0, 16)} ${notes[i].author}${notes[i].to !== 'all' ? ' -> ' + notes[i].to : ''}: ${notes[i].text.replace(/\n/g, ' ')}`;
+    if (out.length + line.length > MEM_INJECT_CHARS) break;
+    out += line + '\n'; picked.unshift(line);
+  }
+  return picked.join('\n');
+}
+const ingestMemory = (job, report) => {
+  const flag = path.join(JOBS, job.id, 'memory_ingested');
+  if (fs.existsSync(flag)) return;
+  fs.writeFileSync(flag, '');
+  for (const m of String(report).matchAll(/<memory(?: to="(claude|gpt|all)")?>([\s\S]*?)<\/memory>/g)) {
+    if (m[2].trim()) addMem({ text: m[2].trim(), author: job.provider, to: m[1] || 'all', tags: ['job:' + job.id.slice(0, 8)] });
+  }
+};
 
 const dirOf = (id) => {
   if (!/^[0-9a-f-]{36}$/.test(id)) throw new Error('invalid job_id');
@@ -61,7 +93,8 @@ const alive = (pid) => { try { process.kill(pid, 0); return true; } catch { retu
 function checkCwd(cwd) {
   if (!path.isAbsolute(cwd) || !fs.existsSync(cwd) || !fs.statSync(cwd).isDirectory()) throw new Error('cwd must be an existing absolute directory');
   const real = fs.realpathSync(cwd);
-  if (!ROOTS.some((r) => real === r || real.startsWith(r + path.sep))) throw new Error(`cwd outside allowed roots (${ROOTS.join(', ')}). Set CLARAMUZ_ALLOWED_ROOTS.`);
+  const norm = (p) => (process.platform === 'win32' ? p.toLowerCase() : p);
+  if (!ROOTS.some((r) => norm(real) === norm(r) || norm(real).startsWith(norm(r) + path.sep))) throw new Error(`cwd outside allowed roots (${ROOTS.join(', ')}). Set CLARAMUZ_ALLOWED_ROOTS.`);
   return real;
 }
 function checkOwned(cwd, owned) {
@@ -71,14 +104,17 @@ function checkOwned(cwd, owned) {
   }
 }
 
-function buildPrompt(a, mode) {
+function buildPrompt(a, mode, provider) {
+  const mem = memoryDigest(provider);
   return [
     `# Task: ${a.title}`, '', a.goal, '',
     a.context ? `## Context\n${a.context}\n` : '',
+    mem ? `## Shared memory (notes from the user and the other model)\n${mem}\n` : '',
     `## Owned paths\nOnly touch: ${a.owned_paths.join(', ')}. Other paths are read-only.`, '',
     `## Mode\n${mode === 'read_only' ? 'READ ONLY. Do not modify any file.' : 'You may edit files inside the owned paths.'}`, '',
     '## Acceptance criteria', ...a.acceptance_criteria.map((c) => `- ${c}`), '',
     '## Final report',
+    'To leave a note for the other model or future jobs, put it in <memory>...</memory> (or <memory to="claude">...</memory> / <memory to="gpt">...</memory>) in your final report.',
     'End with: files changed, how you verified each criterion (commands and results), and remaining work. Do not claim anything you did not run.',
   ].join('\n');
 }
@@ -99,8 +135,6 @@ function commandFor(job, resumeId) {
   return ['codex', args];
 }
 
-const shq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
-
 function launch(provider, a, prompt, resumeId) {
   const mode = a.mode || (provider === 'claude' ? 'read_only' : 'workspace_write');
   const cwd = checkCwd(a.cwd);
@@ -110,8 +144,8 @@ function launch(provider, a, prompt, resumeId) {
   const job = { id, provider, title: a.title, mode, cwd, created_at: new Date().toISOString(), resumed_from: resumeId ? a.job_id : undefined, timeout_seconds: a.timeout_seconds || DEFAULT_TIMEOUT };
   fs.writeFileSync(path.join(d, 'prompt.txt'), prompt);
   const [bin, args] = commandFor(job, resumeId);
-  const script = `cd ${shq(cwd)} && env -u CLAUDE_CODE_SESSION_ID -u CLAUDE_CODE_REMOTE_SESSION_ID -u CLAUDE_CODE_CHILD_SESSION timeout ${job.timeout_seconds} ${bin} ${args.map(shq).join(' ')} < ${shq(path.join(d, 'prompt.txt'))} > ${shq(path.join(d, 'out.txt'))} 2> ${shq(path.join(d, 'err.txt'))}; echo $? > ${shq(path.join(d, 'exit'))}`;
-  const child = spawn('sh', ['-c', script], { detached: true, stdio: 'ignore' });
+  fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ bin, args, cwd, timeout_seconds: job.timeout_seconds }));
+  const child = spawn(process.execPath, [path.join(path.dirname(fileURLToPath(import.meta.url)), 'runner.mjs'), d], { detached: true, stdio: 'ignore', windowsHide: true });
   child.on('error', () => {});
   child.unref();
   job.pid = child.pid;
@@ -128,6 +162,25 @@ function sessionId(job) {
   return undefined;
 }
 
+const QUOTA_RE = /usage limit|quota|rate.?limit|limit reached|credit balance|out of (credits|usage)|too many requests|overloaded|429/i;
+function maybeHandoff(job, d) {
+  if (job.provider !== 'claude' || job.handoff_job || process.env.CLARAMUZ_AUTO_HANDOFF === '0') return job;
+  if (!QUOTA_RE.test(slurp(path.join(d, 'err.txt')) + slurp(path.join(d, 'out.txt')).slice(0, 4000))) return job;
+  if (!version('codex')) return job;
+  let partial = '';
+  try { partial = JSON.parse(slurp(path.join(d, 'out.txt'))).result || ''; } catch { /* none */ }
+  const prompt = slurp(path.join(d, 'prompt.txt')) + `\n\n## Handoff checkpoint\nThis task was started by Claude, which hit its usage limit. Inspect the working tree for any partial changes before acting, and continue rather than restart.${partial ? `\nClaude's last output:\n${partial.slice(0, 4000)}` : ''}\n`;
+  const next = launch('gpt', { title: job.title + ' (handoff from Claude)', cwd: job.cwd, mode: job.mode, timeout_seconds: job.timeout_seconds }, prompt);
+  next.requested_provider = 'claude'; next.handoff_from = job.id; writeJob(next);
+  job.handoff_job = next.id; job.requested_provider = 'claude';
+  writeJob(job);
+  return job;
+}
+const effective = (id) => {
+  for (let i = 0; i < 5; i++) { const st = statusOf(id); if (!st.handoff_job_id) return id; id = st.handoff_job_id; }
+  return id;
+};
+
 function statusOf(id) {
   const job = readJob(id);
   const d = path.join(JOBS, id);
@@ -137,21 +190,29 @@ function statusOf(id) {
   if (fs.existsSync(exitFile)) {
     exit_code = Number(slurp(exitFile).trim());
     state = exit_code === 0 ? 'completed' : exit_code === 124 ? 'timed_out' : fs.existsSync(path.join(d, 'cancelled')) ? 'cancelled' : 'failed';
-  } else if (!alive(job.pid)) state = 'failed';
-  return { ...job, state, exit_code, session_id: sessionId(job) };
+  } else if (fs.existsSync(path.join(d, 'cancelled'))) state = alive(job.pid) ? 'running' : 'cancelled';
+  else if (!alive(job.pid)) state = 'failed';
+  let handoff_job_id;
+  if (state === 'failed' || state === 'timed_out') { const j2 = maybeHandoff(job, d); handoff_job_id = j2.handoff_job; if (handoff_job_id) state = 'handed_off'; }
+  else handoff_job_id = job.handoff_job;
+  return { ...job, state, exit_code, session_id: sessionId(job), handoff_job_id };
 }
 
 function resultOf(id) {
+  id = effective(id);
   const st = statusOf(id);
   if (st.state === 'running') return { ...st, report: null, note: 'still running' };
   const d = path.join(JOBS, id);
   let report = '';
   if (st.provider === 'claude') { try { report = JSON.parse(slurp(path.join(d, 'out.txt'))).result || ''; } catch { report = slurp(path.join(d, 'out.txt')); } }
   else report = slurp(path.join(d, 'last.txt'));
+  ingestMemory(st, report);
   return { ...st, report: report || '(empty report)', stderr_tail: slurp(path.join(d, 'err.txt')).slice(-2000) };
 }
 
-const version = (bin) => {
+const vcache = {};
+const version = (bin) => (bin in vcache ? vcache[bin] : (vcache[bin] = versionRaw(bin)));
+const versionRaw = (bin) => {
   const r = spawnSync(bin, ['--version'], { encoding: 'utf8' });
   return r.error ? null : (r.stdout || r.stderr).trim();
 };
@@ -165,7 +226,7 @@ async function call(name, a) {
       const cwd = checkCwd(a.cwd);
       checkOwned(cwd, a.owned_paths);
       const mode = a.mode || (provider === 'claude' ? 'read_only' : 'workspace_write');
-      const job = launch(provider === 'gpt' ? 'gpt' : 'claude', a, buildPrompt(a, mode));
+      const job = launch(provider === 'gpt' ? 'gpt' : 'claude', a, buildPrompt(a, mode, provider));
       return { job_id: job.id, provider, mode, state: 'running' };
     }
     case 'team_health':
@@ -177,23 +238,34 @@ async function call(name, a) {
     case 'team_status': return statusOf(a.job_id);
     case 'team_wait': {
       const end = Date.now() + (a.seconds || 15) * 1000;
-      let st = statusOf(a.job_id);
-      while (st.state === 'running' && Date.now() < end) { await sleep(1000); st = statusOf(a.job_id); }
+      let st = statusOf(effective(a.job_id));
+      while (st.state === 'running' && Date.now() < end) { await sleep(1000); st = statusOf(effective(a.job_id)); }
       return st;
     }
     case 'team_result': return resultOf(a.job_id);
     case 'team_continue': {
-      const prev = statusOf(a.job_id);
+      const prev = statusOf(effective(a.job_id));
       if (prev.state === 'running') throw new Error('original job still running');
       if (!prev.session_id) throw new Error('original job has no saved session id');
       const prompt = [a.instruction, '', ...(a.acceptance_criteria ? ['## Acceptance criteria', ...a.acceptance_criteria.map((c) => `- ${c}`)] : [])].join('\n');
       const job = launch(prev.provider, { ...prev, job_id: a.job_id, title: `${prev.title} (follow-up)`, cwd: prev.cwd, mode: prev.mode }, prompt, prev.session_id);
       return { job_id: job.id, provider: prev.provider, state: 'running' };
     }
+    case 'memory_add': return addMem(a);
+    case 'memory_read': {
+      let n = readMem();
+      if (a.tag) n = n.filter((x) => x.tags?.includes(a.tag));
+      if (a.query) n = n.filter((x) => x.text.toLowerCase().includes(a.query.toLowerCase()));
+      return n.slice(-(a.limit || 20));
+    }
+    case 'memory_forget': { const n = readMem(); const k = n.filter((x) => x.id !== a.id); writeMem(k); return { removed: n.length - k.length }; }
     case 'team_cancel': {
       const job = readJob(a.job_id);
       fs.writeFileSync(path.join(JOBS, job.id, 'cancelled'), '');
-      try { process.kill(-job.pid, 'SIGTERM'); } catch { /* already gone */ }
+      if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(job.pid), '/T', '/F'], { stdio: 'ignore' });
+      else { try { process.kill(job.pid, 'SIGTERM'); } catch { /* gone */ } }
+      // runner is killed with its child tree on POSIX via the group below
+      if (process.platform !== 'win32') { try { process.kill(-job.pid, 'SIGTERM'); } catch { /* gone */ } }
       return { job_id: job.id, cancel_requested: true };
     }
     default: throw new Error(`unknown tool ${name}`);
@@ -207,7 +279,7 @@ readline.createInterface({ input: process.stdin }).on('line', async (line) => {
   const { id, method, params } = msg;
   if (id === undefined) return; // notification
   try {
-    if (method === 'initialize') send({ id, result: { protocolVersion: params?.protocolVersion || '2025-03-26', capabilities: { tools: {} }, serverInfo: { name: 'clara-muz', version: '0.2.0' } } });
+    if (method === 'initialize') send({ id, result: { protocolVersion: params?.protocolVersion || '2025-03-26', capabilities: { tools: {} }, serverInfo: { name: 'clara-muz', version: '0.3.0' } } });
     else if (method === 'ping') send({ id, result: {} });
     else if (method === 'tools/list') send({ id, result: { tools: TOOLS } });
     else if (method === 'tools/call') {

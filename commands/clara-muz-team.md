@@ -18,4 +18,6 @@ Steps:
 4. Poll with `team_wait` (max 30s per call). Do not busy-loop `team_status`.
 5. Read each finished job with `team_result` and check it against its acceptance criteria. Do not accept a report at face value; inspect the files it names.
 6. If a result falls short, send a correction with `team_continue`. Use `team_cancel` for jobs that are off track.
-7. Summarize for the user: what each provider did, what was verified, what remains.
+7. Record decisions the next job or the other model needs with `memory_add`. Jobs get the shared memory automatically and can reply through `<memory>` blocks, which `team_result` saves.
+8. If a Claude job fails on quota, the server hands it to GPT automatically (`state: handed_off`); `team_wait`/`team_result` follow the handoff. Tell the user when that happened.
+9. Summarize for the user: what each provider did, what was verified, what remains.
