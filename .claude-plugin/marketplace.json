@@ -1,11 +1,16 @@
 {
   "name": "clara-muz",
-  "owner": { "name": "Jay-Hyun" },
+  "owner": {
+    "name": "Jay-Hyun"
+  },
   "plugins": [
     {
       "name": "clara-muz",
-      "source": "./",
-      "description": "Delegate work between Claude and ChatGPT (Codex)."
+      "source": "./plugins/clara-muz",
+      "description": "Claude와 ChatGPT가 일을 나눠 하고 메모로 이어받는 팀 플러그인"
     }
-  ]
+  ],
+  "metadata": {
+    "description": "Claude와 ChatGPT(Codex)가 일을 나눠 하고 메모로 이어받게 해주는 플러그인 모음"
+  }
 }
