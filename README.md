@@ -9,11 +9,11 @@ Backchat between Claude and ChatGPT. A Claude Code plugin that lets one model ha
 
 ## Requirements
 
-This plugin is only the client side. It talks to a **ClaraMuz relay** that you run yourself:
+The plugin connects to the hosted ClaraMuz MCP endpoint (`https://amuze.kr/mcp/clara_muz`), which uses OAuth (scopes `relay:read relay:submit`). Jobs run on a local agent on **your own machine**, so you need:
 
-- A machine with `claude` (Claude Code CLI) and `codex` (Codex CLI) installed and logged in with your own subscriptions.
-- The relay server and local agent. **Not included in this repository yet**; see "Status" below.
-- No API keys are used by design; models run on your own machine.
+- `claude` (Claude Code CLI) and `codex` (Codex CLI) installed and logged in with your own subscriptions.
+- The ClaraMuz local agent running and linked to your account. Setup instructions are not in this repository yet; see "Status".
+- No API keys are used; models run locally.
 
 ## Install
 
@@ -22,24 +22,17 @@ This plugin is only the client side. It talks to a **ClaraMuz relay** that you r
 /plugin install clara-muz@clara-muz
 ```
 
-Then set:
-
-```
-export CLARAMUZ_RELAY_URL="https://your-relay.example.com/mcp"
-export CLARAMUZ_TOKEN="your-relay-token"
-```
-
-Check with `team_health` that the agent is online.
+Then run `/mcp`, pick `ClaraMuz`, and complete the OAuth login in your browser. Check with `team_health` that your agent is online.
 
 ## Safety
 
 - Delegated jobs are limited to the workspace roots your relay allows.
 - Claude jobs default to `read_only`; GPT jobs default to `workspace_write`. Review `owned_paths` before approving.
-- Never commit your relay URL or token.
+- Authentication is OAuth; no token is stored in this repository.
 
 ## Status
 
-Early (v0.1.0). The plugin wrapper is done; the relay server and Mac agent source still need to be added and scrubbed of personal paths and credentials before others can self-host.
+Early (v0.1.0). The plugin wrapper is done. Open question: whether the hosted endpoint accepts accounts other than the maintainer's, and how others install the local agent. Until the agent is published, only the maintainer can use it end to end.
 
 ## 한국어 요약
 

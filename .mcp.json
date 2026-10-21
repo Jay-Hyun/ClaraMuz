@@ -2,8 +2,7 @@
   "mcpServers": {
     "ClaraMuz": {
       "type": "http",
-      "url": "${CLARAMUZ_RELAY_URL}",
-      "headers": { "Authorization": "Bearer ${CLARAMUZ_TOKEN}" }
+      "url": "https://amuze.kr/mcp/clara_muz"
     }
   }
 }
