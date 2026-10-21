@@ -1,0 +1,11 @@
+{
+  "name": "clara-muz",
+  "owner": { "name": "Jay-Hyun" },
+  "plugins": [
+    {
+      "name": "clara-muz",
+      "source": "./",
+      "description": "Delegate work between Claude and ChatGPT (Codex) via a durable job relay."
+    }
+  ]
+}

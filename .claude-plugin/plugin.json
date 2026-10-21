@@ -1,0 +1,10 @@
+{
+  "name": "clara-muz",
+  "version": "0.1.0",
+  "description": "Backchat between Claude and ChatGPT: delegate planning, implementation, research and review to Claude Code CLI or Codex CLI through a durable job relay.",
+  "author": { "name": "Jay-Hyun", "url": "https://github.com/Jay-Hyun" },
+  "homepage": "https://github.com/Jay-Hyun/ClaraMuz",
+  "repository": "https://github.com/Jay-Hyun/ClaraMuz",
+  "license": "MIT",
+  "keywords": ["claude", "codex", "chatgpt", "delegation", "multi-agent", "mcp"]
+}
